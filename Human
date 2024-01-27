@@ -1,0 +1,148 @@
+import VTMotoru
+class TemelBilgiler():
+    def __init__(self):
+        baglantimiz=VTMotoru.VeritabaniBaglantisi("localhost","MetinAnaliziVT","root","(aA020264020)")
+        baglantimiz.TabloOlustur("tblTemelBilgiler","Anektar","Ad","Soyad","YabanciAnektar")
+    def Ad(self,ad):
+        self.ad=ad.lower()
+        return self.ad
+    def Soyad(self,soyad):
+        self.soyad=soyad.lower()
+        return self.soyad
+    def Cinsiyet(self,cinsiyet):
+        if cinsiyet.lower()=="erkek" or cinsiyet==1 or cinsiyet==True:
+            self.cinsiyet=True
+            return self.cinsiyet
+        else:
+            self.cinsiyet=False
+            return self.cinsiyet
+    def DogumTarihi(self,dogumTarihi):
+        if len(str(dogumTarihi))==8:
+            for i in str(dogumTarihi)[0:3:2]:
+                self.dogumTarihi=".".join (str(dogumTarihi))
+                i=i+1
+            return self.dogumTarihi
+    def Ad2(self,ad2):
+        self.ad2=ad2.lower()
+        return self.ad2
+    def Ad3(self,ad3):
+        self.ad2=ad3.lower()
+        return self.ad3
+    def Ad4(self,ad4):
+        self.ad4=ad4.lower()
+        return self.ad4
+    def Soyad2(self,soyad2):
+        self.soyad2=soyad2.lower()
+        return self.soyad2
+    def Soyad3(self,soyad3):
+        self.soyad3=soyad3.lower()
+        return self.soyad3
+    def Soyad4(self,soyad4):
+        self.soyad4=soyad4.lower()
+        return self.soyad4
+class VatandaslikBilgileri(TemelBilgiler):
+    def __init__(self,ad,soyad):
+        super().__init__(ad,soyad)
+        baglantimiz=VTMotoru.VeritabaniBaglantisi("localhost","MetinAnaliziVT","root","(aA020264020)")
+        baglantimiz.TabloOlustur("tblVatandaslikBilgileri","Anektar","KimlikNo","DogumIl","YabanciAnektar")    
+    def KimlikNo(self, kimlikNo):
+        self.kimlikNo=kimlikNo
+        Toplam=0
+        TekToplam=0
+        CiftToplam=0
+        if int(str(self.kimlikNo)[0])!=0 and len(str(self.kimlikNo))==11 and str(self.kimlikNo).isdigit()==True:
+                for basamak in (str(self.kimlikNo)[0:10]):
+                    Toplam+=int(basamak)
+                if Toplam%10==int(str(self.kimlikNo)[10]):
+                    for TekBasamaklar in (str(self.kimlikNo)[0:9:2]):
+                        TekToplam+=int(TekBasamaklar)
+                    for CiftBasamaklar in (str(self.kimlikNo)[1:9:2]):
+                        CiftToplam+=int(CiftBasamaklar)
+                    if ((7*TekToplam)-(CiftToplam))%10==int(str(self.kimlikNo)[9]):
+                        return True
+                    else:
+                        return False
+                else:
+                    return False
+        else:
+            return False
+    def DogumIl(self,dogumIl):
+        self.dogumIl=dogumIl
+        return self.dogumIl
+    def DogumIlce(self,dogumIlce):
+        self.dogumIlce=dogumIlce
+        return self.dogumIlce
+    def Kutuk(self,kutuk):
+        self.kutuk=kutuk
+        return self.kutuk
+    def Cilt(self,cilt):
+        self.cilt=cilt
+        return self.cilt
+    def Sira(self,sira):
+        self.sira=sira
+        return self.sira
+class GirisBilgileri():
+    def __init__(self):        
+        self.baglantimiz=VTMotoru.VeritabaniBaglantisi("localhost","MetinAnaliziVT","root","(aA020264020)")
+        self.baglantimiz.TabloOlustur("tblGirisBilgileri", "Anektar", "KullaniciAdi", "Sifre", "YabanciAnektar")
+    def KullaniciAdi(self, kullaniciAdimi:str):
+        self.kullaniciAdimi=kullaniciAdimi
+        if (self.kullaniciAdimi).count==3:        
+            self.baglantimiz.KullaniciKayit(self.kullaniciAdimi)
+            return True
+        else:
+            return False
+    def Sifre(self,sifremi:str):
+        self.sifremi=sifremi
+        if self.sifremi.count==3:        
+            self.baglantimiz.SifreKayit(self.sifremi)
+            return True
+        else:
+            return False
+class IletisimBilgileri:
+    def __init__(self,ikametIl="",ikametIlce="",mahalle="",sokak="",disKapiNo="",apartman="",eposta="",eposta2="",cepTelefonu="",ceptelefonu2="",sabitTelefon=""):
+        self.ikametIl=ikametIl
+        self.ikametIlce=ikametIlce
+        self.mahalle=mahalle
+        self.sokak=sokak
+        self.diskapiNo=disKapiNo
+        self.apartman=apartman
+        self.eposta=eposta
+        self.eposta2=eposta2
+        self.cepTelefonu=cepTelefonu
+        self.cepTelefonu2=ceptelefonu2
+        self.sabitTelefon=sabitTelefon
+        self.baglantimiz=VTMotoru.VeritabaniBaglantisi("localhost","MetinAnaliziVT","root","(aA020264020)")
+        self.baglantimiz.TabloOlustur("tblIletisimBilgileri", "Anektar", "KullaniciAdi", "Sifre", "YabanicAnekatar")
+    def IkametIl(self):
+        return self.ikametIl
+    def IkametIlce(self):
+        return self.ikametIlce
+    def Mahalle(self):
+        return self.mahalle
+    def Sokak(self):
+        return self.sokak
+    def DisKapiNo(self):
+        return self.diskapiNo
+    def Apartman(self):
+        return self.apartman
+    def Eposta(self):
+        if "@" in self.eposta:
+            return self.eposta
+        else:
+            return "Epostayı kontrol ediniz"
+    def CepTelefonu(self):
+        if " " not in str(self.cepTelefonu) and str(self.cepTelefonu)[0]!=0 and len(str(self.cepTelefonu))==10:
+            return self.cepTelefonu
+        else:
+            return False
+    def CepTelefonu2(self):
+        if " " not in str(self.cepTelefonu2) and str(self.cepTelefonu2)[0]!=0 and len(str(self.cepTelefonu2))==10:
+            return self.cepTelefonu
+        else:
+            return False
+    def SabitTelefon(self):
+        if " " not in str(self.sabitTelefon) and str(self.sabitTelefon)[0]!=0 and len(str(self.sabitTelefon))==10:
+            return self.sabitTelefon
+        else:
+            return False

@@ -1,0 +1,69 @@
+from mysql.connector import Error
+import mysql.connector as sql
+from mysql.connector import errorcode
+class VeritabaniBaglantisi:    
+    def __init__(self, sunucu, vTAdi, vTKullaniciAdi, vTSifre):
+        self.sunucu=sunucu
+        self.vTAdi=vTAdi
+        self.vTKullaniciAdi=vTKullaniciAdi
+        self.vTSifre=vTSifre
+        self.cumle = {'host': self.sunucu, 'user': self.vTKullaniciAdi, 'password': self.vTSifre, 'database': self.vTAdi}
+        self.cumle1 = {'host': self.sunucu, 'user': self.vTKullaniciAdi, 'password': self.vTSifre}
+        try:
+            self.vTBaglantim=sql.connect(**self.cumle)
+            self.veritabanim=self.vTBaglantim.cursor()
+            self.vTBaglantim.commit()
+        except sql.errors.ProgrammingError as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                loginStr="Kullanıcı Adınızı ve Şifrenizi Kontrol Ediniz."
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                self.vTBaglantim=sql.connect(**self.cumle1)
+                self.veritabanim=self.vTBaglantim.cursor()
+                self.vTBaglantim.commit()
+                self.vTOlustur=f"create database {self.vTAdi}"
+                self.veritabanim.execute(self.vTOlustur)
+                self.vTBaglantim.commit()
+                self.vTBaglantim=sql.connect(**self.cumle)
+                self.vTBaglantim.commit()
+            else:
+                print(err)
+        finally:
+            self.veritabanim.execute("CREATE TABLE IF NOT EXISTS tblGirisBilgileri (Anektar INT NOT NULL AUTO_INCREMENT PRIMARY KEY, KullaniciAdi VARCHAR(50) NOT NULL, Sifre VARCHAR(50) NOT NULL, YabanciAnektar VARCHAR(50) NOT NULL DEFAULT 0);")
+            self.vTBaglantim.commit()
+    def TabloOlustur (self, tabloAdi, birincil, asil, ek1, yabanci):
+        self.tabloAdi=tabloAdi
+        self.birincil=birincil
+        self.asil=asil
+        self.ek1=ek1
+        self.yabanci=yabanci
+        siralama=(self.tabloAdi,self.birincil,self.asil,self.ek1,self.yabanci)
+        self.tabloCumlesi="CREATE TABLE IF NOT EXISTS %s (%s INT NOT NULL AUTO_INCREMENT PRIMARY KEY, %s VARCHAR(50) NOT NULL, %s VARCHAR(50) NOT NULL, %s INT NOT NULL);"%siralama
+        self.veritabanim.execute(self.tabloCumlesi)
+        self.vTBaglantim.commit()
+    def KullaniciKontrol(self, pKullaniciAdi, pSifre):
+        self.pKullaniciAdi=pKullaniciAdi
+        self.pSifre=pSifre
+        self.mypassword_queue =[]
+        self.stringim="SELECT * FROM tblGirisBilgileri WHERE KullaniciAdi = '%s';" %(self.pKullaniciAdi,)
+        try:
+            self.veritabanim.execute(self.stringim)
+            self.myresults =self.veritabanim.fetchall()
+            for row in self.myresults:
+                for x in row:
+                    self.mypassword_queue.append(x)
+        except:
+            print('KullaniciAdi veya Şifre mi Girmediniz???')
+
+        if (self.pKullaniciAdi and self.pSifre) in self.mypassword_queue:
+            self.veritabanim.close()
+            return True
+        else:
+            self.veritabanim.close()
+            return False
+    def KullaniciKayit(self, pKullaniciAdi, pSifre):
+        self.pKullaniciAdi=pKullaniciAdi
+        self.pSifre=pSifre
+        self.bilgiler=(self.pKullaniciAdi,self.pSifre)
+        self.stringim="INSERT INTO tblGirisBilgileri (KullaniciAdi, Sifre) VALUES (%s,%s)"
+        self.veritabanim.execute(self.stringim, self.bilgiler)
+        self.vTBaglantim.commit()

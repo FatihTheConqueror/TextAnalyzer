@@ -1,7 +1,7 @@
 import VTMotoru
 class TemelBilgiler():
     def __init__(self):
-        baglantimiz=VTMotoru.VeritabaniBaglantisi("localhost","MetinAnaliziVT","root","(aA020264020)")
+        baglantimiz=VTMotoru.VeritabaniBaglantisi("localhost","MetinAnaliziVT","root","12345")
         baglantimiz.TabloOlustur("tblTemelBilgiler","Anektar","Ad","Soyad","YabanciAnektar")
     def Ad(self,ad):
         self.ad=ad.lower()

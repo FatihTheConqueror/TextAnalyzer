@@ -1,0 +1,105 @@
+import re
+import mysql.connector as sql
+from mysql.connector import errorcode
+class VeritabaniBaglantisi:    
+    def __init__(self, sunucu, vTAdi, vTKullaniciAdi, vTSifre):
+        self.sunucu=sunucu
+        self.vTAdi=vTAdi
+        self.vTKullaniciAdi=vTKullaniciAdi
+        self.vTSifre=vTSifre
+        self.cumle = {'host': self.sunucu, 'user': self.vTKullaniciAdi, 'password': self.vTSifre, 'database': self.vTAdi}
+        self.cumle1 = {'host': self.sunucu, 'user': self.vTKullaniciAdi, 'password': self.vTSifre}
+        try:
+            self.vTBaglantim=sql.connect(**self.cumle)
+            self.veritabanim=self.vTBaglantim.cursor()
+            self.vTBaglantim.commit()
+        except sql.errors.ProgrammingError as err:
+            if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+                loginStr="Kullanıcı Adınızı ve Şifrenizi Kontrol Ediniz."
+            elif err.errno == errorcode.ER_BAD_DB_ERROR:
+                self.vTBaglantim=sql.connect(**self.cumle1)
+                self.veritabanim=self.vTBaglantim.cursor()
+                self.vTBaglantim.commit()
+                self.vTOlustur=f"create database {self.vTAdi}"
+                self.veritabanim.execute(self.vTOlustur)
+                self.vTBaglantim=sql.connect(**self.cumle)
+                self.vTBaglantim.commit()
+            else:
+                print(err)
+    def TabloOlustur (self, tabloAdi, birincil, asil, ek1, ek2:str, yabanci:int):
+        self.tabloAdi=tabloAdi
+        self.birincil=birincil
+        self.yabanci=yabanci
+        self.asil=asil
+        self.ek1=ek1
+        self.ek2=ek2
+        self.tabloCumlesi=f"CREATE TABLE IF NOT EXISTS `{self.tabloAdi}` (`{self.birincil}` int NOT NULL auto_increment, `{self.asil}` varchar(50) NOT NULL, `{self.ek1}` varchar(50) NOT NULL, '{self.yabanci}' int NOT NULL DEFAULT=0,PRIMARY KEY  (`{self.birincil}`));"
+        self.veritabanim.execute(self.tabloCumlesi)
+        self.vTBaglantim.commit()
+    def MetinKayit(self, metin):
+        self.metin=metin
+        self.metinVTKaydet="INSERT INTO tblMetin (Metin) VALUES (%s);"
+        self.veritabanim.execute(self.metinVTKaydet, self.bilgiler)    
+        self.vTBaglantim.commit()
+class MetinAnaliz():
+    kucukSesliHarfler="aeıioöuü"
+    kucukSessizHarfler="bcçdfgğhjklmnprsştvyz"
+    buyukSesliHarfler="AEIİOÖUÜ"
+    buyukSessizHarfler="BCÇDFGĞHJKLMNPRSŞTVYZ"
+    isaretler="\\\n\t\"\'!^+%&/()=?_#$½¾{[]}*-,;.:<>|~"
+    def __init__(self,metin):
+        self.metin=str(metin)
+        
+    def KarakterSay(self):
+        self.karakterSonuc={}
+        for karakter in (self.kucukSesliHarfler+self.kucukSessizHarfler+self.buyukSesliHarfler+self.buyukSessizHarfler+self.isaretler):
+            karakterSayisi=self.metin.count(karakter)
+            if karakterSayisi==0:
+                continue
+            else:
+                self.karakterSonuc[karakter]=karakterSayisi
+        return self.karakterSonuc
+    def SesliSay(self):
+        self.sesliSonuc={}
+        for karakter in (self.kucukSesliHarfler+self.buyukSesliHarfler):
+            karakterSayisi=self.metin.count(karakter)
+            if karakterSayisi==0:
+                continue
+            else:
+                self.sesliSonuc[karakter]=karakterSayisi
+                return self.sesliSonuc
+    def SessizSay(self):
+        self.sessizSonuc={}
+        for karakter in (self.kucukSessizHarfler+self.buyukSessizHarfler):
+            karakterSayisi=self.metin.count(karakter)
+            if karakterSayisi==0:
+                continue
+            else:
+                self.sessizSonuc[karakter]=karakterSayisi
+                return self.sessizSonuc
+    def BuyukSay(self):
+        self.buyukSonuc={}
+        for karakter in (self.buyukSessizHarfler+self.buyukSesliHarfler):
+            karakterSayisi=self.metin.count(karakter)
+            if karakterSayisi==0:
+                continue
+            else:
+                self.buyukSonuc[karakter]=karakterSayisi
+                return self.buyukSonuc
+    def KucukSay(self):
+        self.kucukSonuc={}
+        for karakter in (self.kucukSessizHarfler+self.kucukSesliHarfler):
+            karakterSayisi=self.metin.count(karakter)
+            if karakterSayisi==0:
+                continue
+            else:
+                self.kucukSonuc[karakter]=karakterSayisi
+                return self.kucukSonuc
+    def KelimeSay(self, kelime):
+        self.kelimeSonuc={}
+        re.search(f"{kelime}",self.metin)
+        return re.findall(rf"{kelime}",self.metin)      
+    def CumleSay(self):
+        self.cumleSonuc={}
+        self.cumleSonuc=(str(len(self.metin.split("."))))
+        return self.cumleSonuc
